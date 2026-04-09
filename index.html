@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRIDE | Oráculo de Alexia</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/pombagiras/melusine/refs/heads/main/Al%C3%AA%20(3)%20(3)%20(1).png">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --bg-color: #050505;
+            --accent-color: #ff0055;
+            --rainbow: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden; /* Para a chuva de ícones não criar barra de rolagem */
+            color: white;
+            transition: 0.5s;
+        }
+
+        /* --- CHUVA DE ÍCONES --- */
+        .particle {
+            position: absolute;
+            top: -50px;
+            font-size: 1.5rem;
+            opacity: 0.3;
+            animation: fall linear infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+        @keyframes fall {
+            to { transform: translateY(110vh) rotate(360deg); }
+        }
+
+        /* --- BOTÃO UNICÓRNIO --- */
+        .btn-unicorn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: colorShift 3s infinite alternate;
+            box-shadow: 0 0 15px white;
+        }
+        @keyframes colorShift {
+            0% { border-color: #5BCEFA; box-shadow: 0 0 15px #5BCEFA; }
+            50% { border-color: #F5ABB9; box-shadow: 0 0 15px #F5ABB9; }
+            100% { border-color: #ffffff; box-shadow: 0 0 15px #ffffff; }
+        }
+
+        /* --- CARD PRIDE --- */
+        .card-pride {
+            width: 90%;
+            max-width: 500px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 4px solid;
+            border-image: var(--rainbow) 1;
+            padding: 40px 20px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 0 30px rgba(255, 0, 85, 0.2);
+            border-radius: 20px; /* Nota: border-image reseta o radius, usamos clip-path se necessário, mas manteremos assim pela força visual */
+        }
+
+        h1 {
+            font-size: 3rem;
+            background: var(--rainbow);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+            letter-spacing: 10px;
+            font-weight: 900;
+            filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));
+        }
+
+        #frase-txt {
+            font-size: 1.3rem;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+            /* Animação arco-íris suave no texto */
+            background: linear-gradient(to right, #5BCEFA, #F5ABB9, #ffffff, #F5ABB9, #5BCEFA);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 3s linear infinite;
+        }
+        @keyframes shine { to { background-position: 200% center; } }
+
+        /* --- BOTÃO BAFÔNICO --- */
+        .btn-bafonico {
+            background: transparent;
+            border: 3px solid #F5ABB9;
+            color: white;
+            padding: 20px;
+            width: 100%;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 15px #5BCEFA;
+        }
+        .btn-bafonico:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px #F5ABB9;
+        }
+        .btn-bafonico:active { transform: scale(0.9); }
+
+    </style>
+</head>
+<body>
+
+    <div id="particles-container"></div>
+
+    <button class="btn-unicorn" id="theme-toggle" onclick="togglePride()">🦄</button>
+
+    <div class="card-pride">
+        <h1>PRIDE</h1>
+        <div id="frase-txt">O seu grito começa aqui...</div>
+        <button class="btn-bafonico" onclick="ouvirSussurro()">SEU GRITO</button>
+    </div>
+
+    <script>
+        const S_URL = "https://rbygxkbewzknvjjhxdvw.supabase.co";
+        const S_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJieWd4a2Jld3prbnZqamh4ZHZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwMDcxNjQsImV4cCI6MjA4MTU4MzE2NH0.YrHF9HEGo6yv9MyNsPzFgBhaAB1DRh2SLU8f7L6s1nY";
+        const supabaseClient = window.supabase.createClient(S_URL, S_KEY);
+
+        // Função da Chuva de Ícones
+        function createParticles() {
+            const container = document.getElementById('particles-container');
+            const icons = ['🏳️‍⚧️', '🌈', '✨', '💖', '🔥', '💎'];
+            
+            setInterval(() => {
+                const p = document.createElement('div');
+                p.classList.add('particle');
+                p.innerText = icons[Math.floor(Math.random() * icons.length)];
+                p.style.left = Math.random() * 100 + 'vw';
+                p.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                container.appendChild(p);
+                
+                setTimeout(() => p.remove(), 5000);
+            }, 300);
+        }
+        createParticles();
+
+        async function ouvirSussurro() {
+            const txt = document.getElementById('frase-txt');
+            if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+
+            txt.style.opacity = "0";
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('oraculo_visceral')
+                    .select('frase');
+
+                if (data && data.length > 0) {
+                    const sorteada = data[Math.floor(Math.random() * data.length)];
+                    setTimeout(() => {
+                        txt.innerText = sorteada.frase;
+                        txt.style.opacity = "1";
+                    }, 300);
+                }
+            } catch (e) {
+                txt.innerText = "O arco-íris brilhou forte demais, tente de novo!";
+                txt.style.opacity = "1";
+            }
+        }
+
+        function togglePride() {
+            // Aqui podemos alternar entre o modo Pride Dark e Pride Light ou Gótico
+            document.body.style.filter = document.body.style.filter === 'hue-rotate(180deg)' ? 'none' : 'hue-rotate(180deg)';
+            if (navigator.vibrate) navigator.vibrate(100);
+        }
+    </script>
+</body>
+</html>
