@@ -14,6 +14,10 @@
             --rainbow: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
         }
 
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             background-color: var(--bg-color);
             margin: 0;
@@ -22,7 +26,7 @@
             justify-content: center;
             min-height: 100vh;
             font-family: 'Courier New', Courier, monospace;
-            overflow: hidden; /* Para a chuva de ícones não criar barra de rolagem */
+            overflow: hidden;
             color: white;
             transition: 0.5s;
         }
@@ -59,6 +63,10 @@
             justify-content: center;
             animation: colorShift 3s infinite alternate;
             box-shadow: 0 0 15px white;
+            transition: transform 0.3s;
+        }
+        .btn-unicorn:hover {
+            transform: scale(1.1);
         }
         @keyframes colorShift {
             0% { border-color: #5BCEFA; box-shadow: 0 0 15px #5BCEFA; }
@@ -69,16 +77,16 @@
         /* --- CARD PRIDE --- */
         .card-pride {
             width: 90%;
-            max-width: 500px;
+            max-width: 550px;
             background: rgba(0, 0, 0, 0.85);
             border: 4px solid;
             border-image: var(--rainbow) 1;
-            padding: 40px 20px;
+            padding: 40px 30px;
             text-align: center;
             position: relative;
             z-index: 10;
             box-shadow: 0 0 30px rgba(255, 0, 85, 0.2);
-            border-radius: 20px; /* Nota: border-image reseta o radius, usamos clip-path se necessário, mas manteremos assim pela força visual */
+            border-radius: 20px;
         }
 
         h1 {
@@ -92,48 +100,125 @@
             filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));
         }
 
-        #frase-txt {
-            font-size: 1.3rem;
-            min-height: 150px;
+        /* --- ÁREA DA FRASE COM EFEITO MÁQUINA DE ESCREVER --- */
+        .frase-container {
+            min-height: 180px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            margin-bottom: 25px;
+            position: relative;
+            width: 100%;
+        }
+
+        #frase-txt {
+            font-size: 1.3rem;
             line-height: 1.6;
-            margin-bottom: 30px;
             text-shadow: 0 0 10px rgba(255,255,255,0.3);
-            /* Animação arco-íris suave no texto */
             background: linear-gradient(to right, #5BCEFA, #F5ABB9, #ffffff, #F5ABB9, #5BCEFA);
             background-size: 200% auto;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: shine 3s linear infinite;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            word-wrap: break-word;
+            padding: 10px;
+            position: relative;
         }
-        @keyframes shine { to { background-position: 200% center; } }
 
-        /* --- BOTÃO BAFÔNICO --- */
-        .btn-bafonico {
+        /* Cursor piscante da máquina de escrever */
+        .cursor-blink {
+            display: inline-block;
+            width: 3px;
+            height: 1.3em;
+            background: #F5ABB9;
+            margin-left: 2px;
+            animation: blink 0.8s step-end infinite;
+            vertical-align: text-bottom;
+            -webkit-text-fill-color: initial;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        @keyframes shine { 
+            to { background-position: 200% center; } 
+        }
+
+        /* --- BOTÕES --- */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .btn-bafonico, .btn-copy {
             background: transparent;
             border: 3px solid #F5ABB9;
             color: white;
-            padding: 20px;
-            width: 100%;
-            font-size: 1.2rem;
+            padding: 15px 20px;
+            font-size: 1rem;
             font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             border-radius: 50px;
             cursor: pointer;
             transition: 0.3s;
             position: relative;
             overflow: hidden;
             box-shadow: 0 0 15px #5BCEFA;
+            flex: 1;
         }
-        .btn-bafonico:hover {
-            transform: scale(1.05);
+
+        .btn-bafonico:hover, .btn-copy:hover {
+            transform: scale(1.03);
             box-shadow: 0 0 30px #F5ABB9;
         }
-        .btn-bafonico:active { transform: scale(0.9); }
+        .btn-bafonico:active, .btn-copy:active { 
+            transform: scale(0.95); 
+        }
 
+        .btn-copy {
+            border-color: #5BCEFA;
+            box-shadow: 0 0 15px #F5ABB9;
+            flex: 0.5;
+        }
+
+        /* Toast de confirmação */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            border: 2px solid #F5ABB9;
+            font-size: 0.9rem;
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 480px) {
+            .card-pride { padding: 25px 15px; }
+            h1 { font-size: 2.2rem; letter-spacing: 5px; }
+            #frase-txt { font-size: 1rem; min-height: 60px; }
+            .btn-group { flex-direction: column; }
+            .btn-bafonico, .btn-copy { padding: 12px; font-size: 0.9rem; }
+        }
     </style>
 </head>
 <body>
@@ -144,16 +229,31 @@
 
     <div class="card-pride">
         <h1>PRIDE</h1>
-        <div id="frase-txt">O seu grito começa aqui...</div>
-        <button class="btn-bafonico" onclick="ouvirSussurro()">SEU GRITO</button>
+        <div class="frase-container">
+            <div id="frase-txt">
+                <span id="display-text">O seu grito começa aqui...</span>
+                <span class="cursor-blink" id="cursor"></span>
+            </div>
+        </div>
+        <div class="btn-group">
+            <button class="btn-bafonico" onclick="ouvirSussurro()">SEU GRITO</button>
+            <button class="btn-copy" onclick="copiarFrase()" title="Copiar frase">📋</button>
+        </div>
     </div>
+
+    <!-- Toast de confirmação -->
+    <div id="toast" class="toast">✨ Frase copiada com sucesso!</div>
 
     <script>
         const S_URL = "https://rbygxkbewzknvjjhxdvw.supabase.co";
         const S_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJieWd4a2Jld3prbnZqamh4ZHZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwMDcxNjQsImV4cCI6MjA4MTU4MzE2NH0.YrHF9HEGo6yv9MyNsPzFgBhaAB1DRh2SLU8f7L6s1nY";
         const supabaseClient = window.supabase.createClient(S_URL, S_KEY);
 
-        // Função da Chuva de Ícones
+        // Variáveis de controle
+        let currentFrase = "";
+        let isTyping = false;
+
+        // --- CHUVA DE ÍCONES ---
         function createParticles() {
             const container = document.getElementById('particles-container');
             const icons = ['🏳️‍⚧️', '🌈', '✨', '💖', '🔥', '💎'];
@@ -171,11 +271,50 @@
         }
         createParticles();
 
-        async function ouvirSussurro() {
-            const txt = document.getElementById('frase-txt');
-            if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+        // --- EFEITO MÁQUINA DE ESCREVER ---
+        function typeWriter(text, element, callback) {
+            if (isTyping) return;
+            isTyping = true;
+            
+            const displaySpan = document.getElementById('display-text');
+            const cursor = document.getElementById('cursor');
+            
+            // Remove o cursor durante a digitação
+            cursor.style.display = 'none';
+            
+            let index = 0;
+            displaySpan.textContent = '';
+            
+            function typeNext() {
+                if (index < text.length) {
+                    displaySpan.textContent += text.charAt(index);
+                    index++;
+                    // Velocidade variável para simular digitação humana
+                    const delay = Math.random() * 60 + 40;
+                    setTimeout(typeNext, delay);
+                } else {
+                    // Terminou de digitar
+                    isTyping = false;
+                    cursor.style.display = 'inline-block';
+                    if (callback) callback();
+                }
+            }
+            
+            typeNext();
+        }
 
-            txt.style.opacity = "0";
+        // --- FUNÇÃO PARA BUSCAR FRASE ---
+        async function ouvirSussurro() {
+            if (isTyping) return; // Não interrompe a digitação atual
+            
+            const displaySpan = document.getElementById('display-text');
+            const cursor = document.getElementById('cursor');
+            
+            // Esconde cursor e texto atual
+            cursor.style.display = 'none';
+            displaySpan.textContent = '...';
+            
+            if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
 
             try {
                 const { data, error } = await supabaseClient
@@ -184,22 +323,101 @@
 
                 if (data && data.length > 0) {
                     const sorteada = data[Math.floor(Math.random() * data.length)];
-                    setTimeout(() => {
-                        txt.innerText = sorteada.frase;
-                        txt.style.opacity = "1";
-                    }, 300);
+                    currentFrase = sorteada.frase;
+                    // Inicia o efeito de máquina de escrever
+                    typeWriter(currentFrase, displaySpan, () => {
+                        // Callback quando termina
+                    });
+                } else {
+                    const fallback = "O arco-íris brilhou forte demais, tente de novo!";
+                    currentFrase = fallback;
+                    typeWriter(fallback, displaySpan);
                 }
             } catch (e) {
-                txt.innerText = "O arco-íris brilhou forte demais, tente de novo!";
-                txt.style.opacity = "1";
+                const fallback = "✨ O oráculo está em transe, respire fundo e tente novamente!";
+                currentFrase = fallback;
+                typeWriter(fallback, displaySpan);
             }
         }
 
+        // --- FUNÇÃO COPIAR FRASE ---
+        function copiarFrase() {
+            // Pega o texto atual sem o cursor
+            const displaySpan = document.getElementById('display-text');
+            const textoAtual = displaySpan.textContent;
+            
+            if (!textoAtual || textoAtual === 'O seu grito começa aqui...' || textoAtual === '...') {
+                mostrarToast('⚠️ Nenhuma frase para copiar ainda!');
+                return;
+            }
+
+            // Usa a API de clipboard moderna
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textoAtual)
+                    .then(() => {
+                        mostrarToast('✨ Frase copiada com sucesso!');
+                        if (navigator.vibrate) navigator.vibrate(50);
+                    })
+                    .catch(() => {
+                        // Fallback para navegadores antigos
+                        copiarFallback(textoAtual);
+                    });
+            } else {
+                copiarFallback(textoAtual);
+            }
+        }
+
+        // Fallback para navegadores sem Clipboard API
+        function copiarFallback(texto) {
+            const textarea = document.createElement('textarea');
+            textarea.value = texto;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                mostrarToast('✨ Frase copiada com sucesso!');
+                if (navigator.vibrate) navigator.vibrate(50);
+            } catch (e) {
+                mostrarToast('❌ Não foi possível copiar, tente manualmente.');
+            }
+            
+            document.body.removeChild(textarea);
+        }
+
+        // --- TOAST DE CONFIRMAÇÃO ---
+        function mostrarToast(mensagem) {
+            const toast = document.getElementById('toast');
+            toast.textContent = mensagem;
+            toast.classList.add('show');
+            
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // --- TOGGLE PRIDE ---
         function togglePride() {
-            // Aqui podemos alternar entre o modo Pride Dark e Pride Light ou Gótico
             document.body.style.filter = document.body.style.filter === 'hue-rotate(180deg)' ? 'none' : 'hue-rotate(180deg)';
             if (navigator.vibrate) navigator.vibrate(100);
+            
+            const btn = document.querySelector('.btn-unicorn');
+            btn.style.transform = 'scale(1.3)';
+            setTimeout(() => {
+                btn.style.transform = 'scale(1)';
+            }, 200);
         }
+
+        // --- INICIALIZAÇÃO ---
+        // Ao carregar, busca uma frase automaticamente
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                ouvirSussurro();
+            }, 500);
+        });
     </script>
 </body>
 </html>
